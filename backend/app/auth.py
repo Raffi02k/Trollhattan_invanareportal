@@ -6,13 +6,24 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from app import models
+import os
+from dotenv import load_dotenv
 from app.database import get_db
 from pydantic import BaseModel
 
 # Configuration
-SECRET_KEY = "CHANGE_THIS_IN_PRODUCTION_SECRET_KEY"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+_raw_expire_minutes = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+
+if not SECRET_KEY or not ALGORITHM or not _raw_expire_minutes:
+    raise RuntimeError("Missing required environment variables: SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES")
+
+try:
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(_raw_expire_minutes)
+except ValueError as exc:
+    raise RuntimeError("ACCESS_TOKEN_EXPIRE_MINUTES must be an integer") from exc
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -58,8 +69,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        username: str | None = payload.get("sub")
+        if not isinstance(username, str) or not username:
             raise credentials_exception
         token_data = TokenData(username=username)
     except JWTError:

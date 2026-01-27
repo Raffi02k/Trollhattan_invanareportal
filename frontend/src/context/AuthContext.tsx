@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { PublicClientApplication } from "@azure/msal-browser";
+import { InteractionStatus, PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider, useMsal } from "@azure/msal-react";
 import { loginRequest, msalConfig } from "../auth/msalConfig";
 import { getPrimaryRole } from "../auth/claims";
@@ -31,7 +31,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Internal component to use MSAL hooks
 const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
-    const { instance, accounts } = useMsal();
+    const { instance, accounts, inProgress } = useMsal();
     const [user, setUser] = useState<UnifiedUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -40,6 +40,7 @@ const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
     // 2. If not, we check for a Local Auth JWT token in localStorage.
     // This ensures that the user session persists across reloads for both methods.
     useEffect(() => {
+        if (inProgress !== InteractionStatus.None) return;
         const checkLocalAuth = async () => {
             const token = localStorage.getItem("local_token");
             if (token) {
@@ -82,7 +83,7 @@ const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
         } else {
             checkLocalAuth();
         }
-    }, [accounts, instance]);
+    }, [accounts, instance, inProgress]);
 
     const loginOidc = async () => {
         try {

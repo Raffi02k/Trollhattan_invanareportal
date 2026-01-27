@@ -56,6 +56,13 @@ uvicorn app.main:app --reload
 ```
 *The backend runs on `http://localhost:8000` (Swagger docs at `/docs`).*
 
+Stoppa backend (om den hänger):
+
+```bash
+pgrep -f "uvicorn app.main:app"
+kill -9 <PID> (36215)
+```
+
 > **First Run**: The app will automatically create a `sql_app.db` SQLite file in the directory.
 
 ---
