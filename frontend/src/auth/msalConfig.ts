@@ -5,6 +5,7 @@ export const msalConfig: Configuration = {
         clientId: import.meta.env.VITE_ENTRA_CLIENT_ID || "YOUR_CLIENT_ID",
         authority: `https://login.microsoftonline.com/${import.meta.env.VITE_ENTRA_TENANT_ID || "YOUR_TENANT_ID"}`,
         redirectUri: window.location.origin,
+        postLogoutRedirectUri: window.location.origin
     },
     cache: {
         cacheLocation: "sessionStorage",
@@ -14,4 +15,5 @@ export const msalConfig: Configuration = {
 
 export const loginRequest: PopupRequest = {
     scopes: ["User.Read", "openid", "profile"],
+    prompt: "select_account",
 };

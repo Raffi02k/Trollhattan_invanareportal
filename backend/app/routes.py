@@ -16,7 +16,7 @@ class UserOut(BaseModel):
     auth_method: str
 
     class Config:
-        orm_mode = True
+        from_ = True
 
 @router.post("/token", response_model=auth.Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -41,9 +41,9 @@ async def read_users_me(current_user: models.User = Depends(auth.get_current_use
 @router.post("/setup")
 async def setup_users(db: Session = Depends(get_db)):
     # Create a test user if not exists
-    if not db.query(models.User).filter(models.User.username == "admin").first():
-        hashed = auth.get_password_hash("password")
-        user = models.User(username="admin", hashed_password=hashed, role="Admin", auth_method="local", full_name="Admin User")
+    if not db.query(models.User).filter(models.User.username == "raffi").first():
+        hashed = auth.get_password_hash("password123")
+        user = models.User(username="raffi", hashed_password=hashed, role="Admin", auth_method="local", full_name="Raffi")
         db.add(user)
         db.commit()
-    return {"message": "Users created"}
+    return {"message": "User created"}
