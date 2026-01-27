@@ -106,8 +106,8 @@ curl -X POST http://localhost:8000/setup
 ```
 
 Then log in with:
-- **Username**: `admin`
-- **Password**: `password`
+- **Username**: `raffi`
+- **Password**: `password123`
 
 ### OIDC Login
 Click the **"Sign in with Microsoft"** button on the login page. Ensure your Azure App Registration has `http://localhost:5173` added as a **Single Page Application (SPA)** Redirect URI.
