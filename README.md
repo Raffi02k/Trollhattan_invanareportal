@@ -114,6 +114,68 @@ Click the **"Sign in with Microsoft"** button on the login page. Ensure your Azu
 
 ---
 
+## 📘 OIDC + Entra ID: Hur det fungerar
+
+Detta projekt använder **OpenID Connect (OIDC)** via **Microsoft Entra ID**. OIDC bygger ovanpå OAuth 2.0 och levererar en **ID-token** som innehåller användarens identitet (claims), medan **access tokens** används för att anropa API:er.
+
+> **Teknisk not (SPA):** MSAL använder normalt **Authorization Code Flow med PKCE**, vilket är standard för moderna Single Page Applications.
+
+### 🔐 Tokens (snabbt)
+- **ID token**: används för inloggning/identitet i frontend (t.ex. namn, e-post, roller/claims).
+- **Access token**: används när du vill anropa API:er (t.ex. Microsoft Graph eller ditt eget backend-API).
+
+### 🌐 Överblick av flödet (SPA)
+- Frontend startar en inloggning via **MSAL** (Microsofts klientbibliotek).
+- Entra ID autentiserar användaren (SSO) och returnerar tokens till frontend.
+- Frontend tolkar claims och skapar en gemensam `User`-modell i `AuthContext`.
+- Backend används för **lokal** inloggning (username/password).
+
+> **Obs (denna template):** OIDC-inloggningen sker i frontend och backend skyddas inte av Entra-tokens i den här startern.  
+> I en production-variant brukar man låta backend **validera access tokens (JWT)** för att skydda API-endpoints.
+
+### ✅ Vad du behöver från Entra
+- **Tenant ID (Directory ID)**: din organisations Entra-tenant.
+- **Client ID (Application ID)**: ID för din app-registrering.
+- **Redirect URI (SPA)**: `http://localhost:5173` (lokal dev).
+
+### 👮 RBAC / Roller (valfritt men vanligt)
+Om du vill använda roller i appen:
+- Skapa **App Roles** i Entra App Registration och tilldela dem till användare/grupper.
+- Roller kan sedan dyka upp i token som en `roles`-claim (beroende på konfiguration).
+- Frontend kan mappa claims → app-roller och skydda UI med t.ex. `<RoleGate />`.
+
+---
+
+## 🔑 Så skaffar du Entra ID, Tenant ID och Client ID
+
+1. Gå till **https://entra.microsoft.com** och logga in.
+2. Öppna **Entra ID** (tidigare Azure AD).
+3. **Tenant ID** hittar du under **Overview** → **Directory (tenant) ID**.
+4. Gå till **App registrations** → **New registration**.
+5. Ange namn, välj kontotyper och lägg till Redirect URI:
+   - Platform: **Single-page application (SPA)**
+   - URI: `http://localhost:5173`
+6. Skapa appen. Nu ser du:
+   - **Application (client) ID** = `VITE_ENTRA_CLIENT_ID`
+   - **Directory (tenant) ID** = `VITE_ENTRA_TENANT_ID`
+
+### 🔧 Koppla i projektet
+Fyll i `.env` i `frontend`:
+
+```env
+VITE_ENTRA_CLIENT_ID=din_client_id
+VITE_ENTRA_TENANT_ID=din_tenant_id
+
+
+## ♻️ Att anvanda i andra projekt
+
+- Skapa ny App Registration i Entra for varje projekt eller miljo.
+- Uppdatera Redirect URI och klient-id i `.env`.
+- Valj scopes/permissions om du ska anropa Microsoft Graph eller egna API:er.
+- Behall samma flode: MSAL i frontend for OIDC, backend for lokal auth om behovs.
+
+---
+
 ## 📂 Project Structure
 
 ```bash
