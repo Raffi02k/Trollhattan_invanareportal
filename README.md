@@ -2,8 +2,6 @@
 
 En modern och säker plattform för invånare i Trollhättans Stad att hantera sina ärenden, se personlig information och kommunicera med kommunen. Portalen fungerar som en central knutpunkt ("Mina Sidor") för digitala tjänster.
 
-![Trollhättan Logo](https://www.trollhattan.se/templates/trollhattan/assets/images/logo.svg)
-
 # Preview
 ## LOGIN
 <img width="1439" height="779" alt="Screenshot 2026-03-25 at 14 39 30" src="https://github.com/user-attachments/assets/9dc58919-e7a0-4d10-9401-31faddade508" />
