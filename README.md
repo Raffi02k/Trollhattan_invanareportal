@@ -4,6 +4,15 @@ En modern och säker plattform för invånare i Trollhättans Stad att hantera s
 
 ![Trollhättan Logo](https://www.trollhattan.se/templates/trollhattan/assets/images/logo.svg)
 
+# Preview
+## LOGIN
+<img width="1439" height="779" alt="Screenshot 2026-03-25 at 14 39 30" src="https://github.com/user-attachments/assets/9dc58919-e7a0-4d10-9401-31faddade508" />
+
+## Dashboard
+<img width="1440" height="778" alt="Screenshot 2026-03-25 at 14 39 51" src="https://github.com/user-attachments/assets/28e363ab-9412-42a9-a102-fd0834a0db79" />
+
+
+
 ## Syfte och Mål
 Projektet syftar till att leverera en sammanhållen användarupplevelse för medborgare genom att aggregera data från flera kommunala system. Den är byggd med en **BFF-arkitektur (Backend-for-Frontend)** för att säkerställa hög prestanda och säkerhet.
 
