@@ -12,6 +12,8 @@ from sqlalchemy.exc import IntegrityError
 from .. import models
 from .local_jwt import get_password_hash
 from ..models import User, AuthMethod
+from ..party_api import get_or_create_party_id
+import random
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +141,14 @@ def get_or_create_oidc_user(db: Session, token_claims: dict) -> "models.User":
     if existing_user_by_oidc:
         if getattr(existing_user_by_oidc, "is_disabled", False):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is disabled")
+
+        # Mock Identity Assignment Fix
+        if not existing_user_by_oidc.personnummer or not existing_user_by_oidc.party_id:
+            existing_user_by_oidc.personnummer = existing_user_by_oidc.personnummer or f"19{random.randint(70, 99)}0101{random.randint(1000, 9999)}"
+            existing_user_by_oidc.party_id = get_or_create_party_id(existing_user_by_oidc.personnummer)
+            db.commit()
+            db.refresh(existing_user_by_oidc)
+
         return existing_user_by_oidc
 
     # 3) Försök matcha/länka via email
@@ -175,6 +185,10 @@ def get_or_create_oidc_user(db: Session, token_claims: dict) -> "models.User":
     # Om email saknas: använd oid som username (fallback)
     username = email_address or oidc_object_id
 
+    # OIDC anrop mockar vi Personnummer & PartyId
+    mock_pn = f"19{random.randint(70, 99)}0101{random.randint(1000, 9999)}"
+    mock_party_id = get_or_create_party_id(mock_pn)
+
     created_user = models.User(
         username=username,
         email=email_address,
@@ -183,6 +197,8 @@ def get_or_create_oidc_user(db: Session, token_claims: dict) -> "models.User":
         auth_method="oidc",
         oidc_id=oidc_object_id,
         oidc_tenant_id=tenant_id,
+        personnummer=mock_pn,
+        party_id=mock_party_id,
     )
 
     db.add(created_user)

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { InteractionStatus, PublicClientApplication } from "@azure/msal-browser";
 import { MsalProvider, useMsal } from "@azure/msal-react";
-import { loginRequest, msalConfig } from "../auth/msalConfig";
+import { loginRequest, msalConfig, apiTokenRequest } from "../auth/msalConfig";
 import axios from "axios";
 
 // Initialize MSAL outside to pass to provider
@@ -38,7 +38,18 @@ const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
     // 1. First, we check if an OIDC user is already logged in via MSAL (accounts.length > 0).
     // 2. If not, we check for a Local Auth JWT token in localStorage.
     // This ensures that the user session persists across reloads for both methods.
-    const buildOidcUserFromAccount = (account: (typeof accounts)[number]) => {
+    const buildOidcUserFromAccount = async (account: (typeof accounts)[number]) => {
+        let token: string | undefined = undefined;
+        try {
+            const tokenResponse = await instance.acquireTokenSilent({
+                ...apiTokenRequest,
+                account: account
+            });
+            token = tokenResponse.accessToken;
+        } catch (e) {
+            console.error("Failed to acquire silent token for OIDC user", e);
+        }
+
         setUser({
             id: account.localAccountId,
             name: account.name || "",
@@ -46,11 +57,17 @@ const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
             role: account.idTokenClaims ? String(account.idTokenClaims["roles"] ?? account.idTokenClaims["role"] ?? "User") : "User",
             authMethod: "oidc",
             rawClaims: account.idTokenClaims,
+            token: token,
         });
     };
 
     useEffect(() => {
-        if (inProgress !== InteractionStatus.None) return;
+        // [CRITICAL FIX] MSAL 3.x starts with inProgress = "startup". We must let it finish "startup" before proceeding,
+        // but we MUST NOT block on "none".
+        if (inProgress === InteractionStatus.Startup || inProgress === InteractionStatus.HandleRedirect) {
+            return;
+        }
+
         const checkLocalAuth = async () => {
             const token = localStorage.getItem("local_token");
             if (token) {
@@ -78,7 +95,7 @@ const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
             try {
                 const account = accounts[0];
                 instance.setActiveAccount(account);
-                buildOidcUserFromAccount(account);
+                await buildOidcUserFromAccount(account);
             } catch (e) {
                 console.error("OIDC session found but setup failed", e);
             } finally {

@@ -14,6 +14,7 @@ if raw_origins:
 else:
     origins = [
         "http://localhost:5173",
+        "http://localhost:5174",
         "http://localhost:3000",
     ]
 
@@ -28,6 +29,8 @@ app.add_middleware(
 app.include_router(routers.local_auth.router)
 app.include_router(routers.oidc_auth.router)
 app.include_router(routers.api_router.router)
+app.include_router(routers.bff.router)
+app.include_router(routers.mock_services.router)
 
 @app.on_event("startup")
 def seed_on_startup():

@@ -1,5 +1,6 @@
 from .models import User, AuthMethod
 from .db import SessionLocal
+from sqlalchemy.exc import IntegrityError
 from .auth import local_jwt
 
 def seed_data():
@@ -14,7 +15,15 @@ def seed_data():
 
         # Create a new user
         hashed_password = local_jwt.get_password_hash("password123")
-        user = User( username="raffi", full_name="Raffi", hashed_password=hashed_password, role="Admin", auth_method=AuthMethod.LOCAL.value,)
+        user = User(
+            username="raffi", 
+            full_name="Raffi Medzad Aghlian", 
+            hashed_password=hashed_password, 
+            role="Admin", 
+            auth_method=AuthMethod.LOCAL.value,
+            personnummer="199201011234",
+            party_id="mock-party-raffi"
+        )
 
         db_session.add(user)
         db_session.commit()

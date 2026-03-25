@@ -1,4 +1,4 @@
-import { type Configuration, type PopupRequest, type SilentRequest } from "@azure/msal-browser";
+import { PublicClientApplication, type Configuration, type PopupRequest, type SilentRequest } from "@azure/msal-browser";
 
 export const msalConfig: Configuration = {
     auth: {
@@ -24,3 +24,5 @@ export const apiTokenRequest: SilentRequest = {
     // Access token for your API scope (not Graph)
     scopes: apiScope ? [apiScope] : [],
 };
+
+export const msalInstance = new PublicClientApplication(msalConfig);
