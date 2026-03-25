@@ -1,42 +1,45 @@
-# Hybrid Auth Starter (Vite + FastAPI)
+# Invånareportal - Trollhättans Stad
 
-Production-ready starter with **two auth paths**:
-- **OIDC (Microsoft Entra ID)** in the frontend using MSAL
-- **Local username/password** in the backend (JWT)
+En modern och säker plattform för invånare i Trollhättans Stad att hantera sina ärenden, se personlig information och kommunicera med kommunen. Portalen fungerar som en central knutpunkt ("Mina Sidor") för digitala tjänster.
 
-It includes a unified `User` model in the React `AuthContext`, RBAC helpers, and optional backend protection using Entra access tokens.
+![Trollhättan Logo](https://www.trollhattan.se/templates/trollhattan/assets/images/logo.svg)
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![React](https://img.shields.io/badge/frontend-React_18-61DAFB.svg)
-![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688.svg)
-![Tailwind](https://img.shields.io/badge/style-Tailwind_CSS-38B2AC.svg)
+## Syfte och Mål
+Projektet syftar till att leverera en sammanhållen användarupplevelse för medborgare genom att aggregera data från flera kommunala system. Den är byggd med en **BFF-arkitektur (Backend-for-Frontend)** för att säkerställa hög prestanda och säkerhet.
 
-## Features
-- Dual auth (OIDC + Local)
-- Unified user shape in `AuthContext`
-- RBAC via `<RoleGate allowedRoles={['Admin']} />`
-- Token inspector for debugging
-- Vite + FastAPI dev flow
+## Huvudfunktioner
+- **Mina Ärenden:** Integration med **Open ePlatform (OeP)** för att visa pågående och avslutade ärenden.
+- **Profil och Personuppgifter:** Visning av folkbokföringsdata via integration med **Navet** och **Party API**.
+- **Säker Inloggning:** Stöd för **BankID** via Microsoft Entra ID (OIDC) samt lokal behörighetshantering.
+- **Unified Dashboard:** En översiktlig vy inspirerad av moderna e-tjänsteportaler.
 
-## Tech Stack
+## Teknisk Stack
 ### Frontend
-- React 18 + TypeScript + Vite
-- Tailwind CSS
-- MSAL (`@azure/msal-browser`, `@azure/msal-react`)
+- **React 18** + **TypeScript** + **Vite**
+- **Tailwind CSS** för modern och responsiv design.
+- **MSAL** (`@azure/msal-browser`) för OIDC-autentisering.
 
-### Backend
-- FastAPI
-- SQLAlchemy + SQLite
-- JWT for local auth (`python-jose`, `passlib[bcrypt]`)
+### Backend (BFF)
+- **FastAPI** (Python) för snabb och asynkron API-hantering.
+- **SQLAlchemy** + **SQLite** för lokal datalagring.
+- **Integrationer:** Moduler för OeP, Navet och Party API.
 
-## Getting Started
-### Backend
-```bash
+---
+
+## Kom igång
+
+### Backend (FastAPI)
+1. Navigera till `backend/`-katalogen.
+2. Skapa och aktivera en virtuell miljö:
+   ```bash
 cd backend
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
+   python3 -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   ```
+3. Installera beroenden:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 Create a `.env` in `backend/`:
 ```env
@@ -61,14 +64,16 @@ CORS_ALLOWED_ORIGINS=https://your-frontend.example.com
 ```
 
 Start the API:
-```bash
-uvicorn app.main:app --reload
-```
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
-### Frontend
-```bash
+### Frontend (Vite + React)
+1. Navigera till `frontend/`-katalogen.
+2. Installera beroenden:
+   ```bash
 cd frontend
-npm install
+   npm install
 cp .env.example .env
 ```
 
@@ -82,9 +87,9 @@ VITE_ENTRA_API_SCOPE=api://<API-CLIENT-ID>/access_as_user
 ```
 
 Start the UI:
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
 ## Usage
 ### Local Auth (JWT)
@@ -148,5 +153,5 @@ Then call protected endpoints with `Authorization: Bearer <access_token>`.
 - Disable dev setup endpoint (`ENABLE_DEV_SETUP=false`).
 - Add database migration for `is_disabled` and manage account lockouts.
 
-## License
-MIT
+## Licens
+MIT - Trollhättans Stad
