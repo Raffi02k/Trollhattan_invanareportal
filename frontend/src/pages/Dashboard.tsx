@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
     LayoutDashboard,
@@ -19,7 +20,12 @@ type Tab = 'overview' | 'cases' | 'documents' | 'invoices' | 'profile';
 
 export const Dashboard: React.FC = () => {
     const { user, logout } = useAuth();
-    const [activeTab, setActiveTab] = useState<Tab>('overview');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = (searchParams.get("tab") as Tab) || "overview";
+
+    const setActiveTab = (tab: Tab) => {
+        setSearchParams({ tab });
+    };
     const [portalData, setPortalData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [scrolled, setScrolled] = useState(false);
@@ -44,8 +50,8 @@ export const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchMe = async () => {
             try {
-                const response = await fetch("http://localhost:8000/api/me", {
-                    headers: { 'Authorization': `Bearer ${user?.token}` }
+                const response = await fetch("http://localhost:4000/api/me", {
+                    credentials: 'include'
                 });
                 const data = await response.json();
                 setPortalData(data);
@@ -60,8 +66,8 @@ export const Dashboard: React.FC = () => {
         const fetchDocs = async () => {
             setDocsLoading(true);
             try {
-                const response = await fetch("http://localhost:8000/api/documents", {
-                    headers: { 'Authorization': `Bearer ${user?.token}` }
+                const response = await fetch("http://localhost:4000/api/documents", {
+                    credentials: 'include' // Ensure withCredentials is true
                 });
                 const data = await response.json();
                 setGlobalDocuments(data);
@@ -72,7 +78,7 @@ export const Dashboard: React.FC = () => {
             }
         };
 
-        if (user?.token) {
+        if (user) {
             fetchMe();
             fetchDocs();
         } else {
@@ -92,17 +98,17 @@ export const Dashboard: React.FC = () => {
         setIsSavingProfile(true);
         setSaveSuccess(false);
         try {
-            const response = await fetch("http://localhost:8000/api/me", {
+            const response = await fetch("http://localhost:4000/api/me", {
                 method: "PATCH",
                 headers: {
-                    'Authorization': `Bearer ${user?.token}`,
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({ email: profileEmail || null, phone_number: profilePhone || null })
             });
             if (response.ok) {
                 const data = await response.json();
-                setPortalData(data);
+                setPortalData((prev: any) => ({ ...prev, ...data }));
                 setIsEditingProfile(false);
                 setSaveSuccess(true);
                 setTimeout(() => setSaveSuccess(false), 3000);
@@ -228,7 +234,7 @@ export const Dashboard: React.FC = () => {
                                 <a href="#" className="flex items-center gap-3 text-sm font-medium text-gray-600 hover:text-trollback-blue transition-colors mb-2">
                                     Så fungerar Mina sidor
                                 </a>
-                                <a href="#" className="flex items-center gap-3 text-sm font-medium text-gray-600 hover:text-trollback-blue transition-colors">
+                                <a href="https://www.trollhattan.se/startsida/kontakta-oss/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm font-medium text-gray-600 hover:text-trollback-blue transition-colors">
                                     Kontakta Kontaktcenter
                                 </a>
                             </div>
@@ -284,7 +290,7 @@ export const Dashboard: React.FC = () => {
 
                             {activeTab === 'cases' && (
                                 <div className="animate-fade-in-up">
-                                    <CaseList token={user?.token} />
+                                    <CaseList />
                                 </div>
                             )}
 

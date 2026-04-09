@@ -1,9 +1,0 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-requests
-python-dotenv
-python-multipart
-python-jose[cryptography]
-passlib[bcrypt]==1.7.4
-bcrypt==4.3.0

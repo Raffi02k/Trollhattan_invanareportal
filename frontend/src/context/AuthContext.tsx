@@ -12,7 +12,7 @@ export interface UnifiedUser {
     name: string;
     username: string;
     role: string;
-    authMethod: "oidc" | "local";
+    authMethod: "oidc" | "local" | "saml";
     rawClaims?: any; // For debugging
     token?: string; // JWT for local, AccessToken for OIDC (if needed)
 }
@@ -68,27 +68,33 @@ const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
             return;
         }
 
-        const checkLocalAuth = async () => {
-            const token = localStorage.getItem("local_token");
-            if (token) {
-                try {
-                    const res = await axios.get("http://localhost:8000/me", {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
+        const checkSamlAuth = async (): Promise<boolean> => {
+            try {
+                const res = await axios.get("http://localhost:4000/api/auth/me", {
+                    withCredentials: true,
+                    headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'Expires': '0' }
+                });
+                console.log("[AUTH DEBUG] /api/auth/me response:", res.data);
+                if (res.data && res.data.partyId) {
                     setUser({
-                        id: res.data.id.toString(),
-                        name: res.data.full_name || res.data.username,
-                        username: res.data.username,
-                        role: res.data.role,
-                        authMethod: "local",
-                        token: token,
+                        id: res.data.partyId,
+                        name: res.data.name,
+                        username: res.data.personNumber,
+                        role: res.data.role || "User",
+                        authMethod: "saml",
                     });
-                } catch (e) {
-                    console.error("Local token invalid", e);
-                    localStorage.removeItem("local_token");
+                    return true; // Successfully authenticated via SAML
                 }
+            } catch (e) {
+                // Not authenticated via SAML
             }
-            setIsLoading(false);
+            return false;
+        };
+
+        const checkLocalAuth = async () => {
+             // Local auth is now expected to be handled by the BFF if needed, 
+             // or we can remove it if only SAML is favored.
+             setIsLoading(false);
         };
 
         const checkOidcAuth = async () => {
@@ -106,7 +112,15 @@ const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
             setIsLoading(true);
             checkOidcAuth();
         } else {
-            checkLocalAuth();
+            // First check SAML from BFF via cookies
+            checkSamlAuth().then((hasSaml) => {
+                if (!hasSaml) {
+                    // Try local auth token
+                    checkLocalAuth();
+                } else {
+                    setIsLoading(false);
+                }
+            });
         }
     }, [instance, accounts, inProgress]);
 
@@ -117,23 +131,8 @@ const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
             formData.append("username", username);
             formData.append("password", password);
 
-            const res = await axios.post("http://localhost:8000/token", formData);
-            const token = res.data.access_token;
-            localStorage.setItem("local_token", token);
-
-            // Fetch User Details
-            const userRes = await axios.get("http://localhost:8000/me", {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            setUser({
-                id: userRes.data.id.toString(),
-                name: userRes.data.full_name || userRes.data.username,
-                username: userRes.data.username,
-                role: userRes.data.role,
-                authMethod: "local",
-                token: token,
-            });
+            await axios.post("http://localhost:4000/api/auth/login", formData, { withCredentials: true });
+            // ... handle response from BFF if we implement local login there
         } catch (error) {
             setIsLoading(false);
             throw error;
@@ -149,13 +148,23 @@ const AuthProviderContent = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
         if (user?.authMethod === "oidc") {
             instance.logoutRedirect();
         } else {
+            // For SAML (BFF) or Local
+            try {
+                // Always try to clear BFF session if it exists
+                console.log("[AUTH DEBUG] Calling BFF logout...");
+                await axios.post("http://localhost:4000/api/auth/logout", {}, { withCredentials: true });
+                console.log("[AUTH DEBUG] BFF logout call finished.");
+            } catch (e) {
+                console.error("[AUTH DEBUG] Failed to logout from BFF", e);
+            }
+            
             localStorage.removeItem("local_token");
             setUser(null);
-            window.location.reload();
+            window.location.href = "/login";
         }
     };
 

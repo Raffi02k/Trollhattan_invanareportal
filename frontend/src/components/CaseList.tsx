@@ -12,6 +12,7 @@ import {
     Upload
 } from "lucide-react";
 import { DocumentCard } from "./DocumentCard";
+import { useAuth } from "../context/AuthContext";
 
 interface Document {
     id: string;
@@ -42,7 +43,8 @@ interface Case {
     messages: Message[];
 }
 
-export const CaseList: React.FC<{ token?: string }> = ({ token }) => {
+export const CaseList: React.FC = () => {
+    const { user } = useAuth();
     const [cases, setCases] = useState<Case[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -55,8 +57,8 @@ export const CaseList: React.FC<{ token?: string }> = ({ token }) => {
     useEffect(() => {
         const fetchCases = async () => {
             try {
-                const response = await fetch("http://localhost:8000/api/cases", {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const response = await fetch("http://localhost:4000/api/cases", {
+                    credentials: 'include'
                 });
                 if (!response.ok) throw new Error("Failed to fetch cases");
                 const data = await response.json();
@@ -67,19 +69,19 @@ export const CaseList: React.FC<{ token?: string }> = ({ token }) => {
                 setLoading(false);
             }
         };
-        if (token) fetchCases();
-    }, [token]);
+        if (user) fetchCases();
+    }, [user]);
 
     const handleSendMessage = async () => {
         if (!newMessage.trim() || !selectedCase) return;
         setIsSending(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/cases/${selectedCase.caseId}/messages`, {
+            const response = await fetch(`http://localhost:4000/api/cases/${selectedCase.caseId}/messages`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${token}`
+                    "Content-Type": "application/json"
                 },
+                credentials: 'include',
                 body: JSON.stringify({ content: newMessage })
             });
             if (response.ok) {
@@ -107,11 +109,9 @@ export const CaseList: React.FC<{ token?: string }> = ({ token }) => {
         formData.append("file", file);
 
         try {
-            const response = await fetch(`http://localhost:8000/api/cases/${selectedCase.caseId}/documents`, {
+            const response = await fetch(`http://localhost:4000/api/cases/${selectedCase.caseId}/documents`, {
                 method: "POST",
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
+                credentials: 'include',
                 body: formData
             });
 

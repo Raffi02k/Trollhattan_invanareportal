@@ -21,15 +21,14 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document: docData, o
 
     const handleDownload = async () => {
         try {
-            if (!user?.token) {
+            if (!user) {
                 alert("Du måste vara inloggad för att hämta dokument.");
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/documents/${docData.id}/download`, {
-                headers: {
-                    'Authorization': `Bearer ${user.token}`
-                }
+            const downloadUrl = `http://localhost:4000/api/documents/${docData.id}/download`;
+            const response = await fetch(downloadUrl, {
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -61,11 +60,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document: docData, o
 
         setIsDeleting(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/documents/${docData.id}`, {
+            const response = await fetch(`http://localhost:4000/api/documents/${docData.id}`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${user?.token}`
-                }
+                credentials: 'include'
             });
 
             if (!response.ok) {

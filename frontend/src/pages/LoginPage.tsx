@@ -1,36 +1,16 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
-import { ArrowRight, ShieldCheck, User, Building2, Lock, ChevronLeft } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 
 export const LoginPage: React.FC = () => {
-    const { loginLocal, loginOidc, isAuthenticated } = useAuth();
-    const [view, setView] = useState<'selection' | 'local'>('selection');
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const { loginOidc, isAuthenticated } = useAuth();
     const [imgError, setImgError] = useState(false);
     const [mobileImgError, setMobileImgError] = useState(false);
 
     if (isAuthenticated) {
         return <Navigate to="/" replace />;
     }
-
-    const handleLocalLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError("");
-        setIsLoading(true);
-        // Add a deliberate tiny delay for effect
-        setTimeout(async () => {
-            try {
-                await loginLocal(username, password);
-            } catch (err) {
-                setError("Ogiltiga inloggningsuppgifter");
-                setIsLoading(false);
-            }
-        }, 400);
-    };
 
     return (
         <div className="min-h-screen bg-trollback-light-blue flex items-center justify-center p-4 relative overflow-hidden">
@@ -99,136 +79,91 @@ export const LoginPage: React.FC = () => {
                             />
                         )}
                     </div>
+                    <div className="animate-fade-in w-full max-w-md mx-auto">
+                        <h2 className="text-3xl font-black text-gray-900 mb-2">Välj inloggning</h2>
+                        <p className="text-gray-500 mb-10">Hur vill du logga in idag?</p>
 
-                    {view === 'selection' ? (
-                        <div className="animate-fade-in w-full max-w-md mx-auto">
-                            <h2 className="text-3xl font-black text-gray-900 mb-2">Välj inloggning</h2>
-                            <p className="text-gray-500 mb-10">Hur vill du logga in idag?</p>
+                        <div className="space-y-4">
+                            <button
+                                onClick={() => window.location.href = "http://localhost:4000/api/auth/saml/login"}
+                                className="w-full group flex items-center p-6 bg-white border-2 border-gray-100 rounded-2xl hover:border-trollback-blue hover:shadow-[0_8px_30px_rgb(0,75,135,0.12)] hover:-translate-y-1 transition-all duration-300 text-left relative overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-trollback-light-blue to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                            <div className="space-y-4">
-                                <button
-                                    onClick={() => setView('local')}
-                                    className="w-full group flex items-center p-6 bg-white border-2 border-gray-100 rounded-2xl hover:border-trollback-blue hover:shadow-[0_8px_30px_rgb(0,75,135,0.12)] hover:-translate-y-1 transition-all duration-300 text-left relative overflow-hidden"
+                                <div className="flex bg-white p-2 rounded-2xl border border-gray-100 shadow-sm relative z-10 shrink-0 w-20 h-20 items-center justify-center overflow-hidden">
+                                    <img
+                                        src="/assets/BankID_logo.webp"
+                                        alt="BankID"
+                                        className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            e.currentTarget.parentElement?.classList.add('bg-trollback-light-blue');
+                                        }}
+                                    />
+                                </div>
+                                <div className="ml-5 flex-1 relative z-10">
+                                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-trollback-dark transition-colors">Privatperson</h3>
+                                    <p className="text-sm text-gray-500 mt-1">Logga in med ditt personliga BankID</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-white flex items-center justify-center relative z-10 shadow-sm transition-colors duration-300">
+                                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-trollback-blue transition-colors" />
+                                </div>
+                            </button>
+
+                            <button
+                                onClick={loginOidc}
+                                className="w-full group flex items-center p-6 bg-white border-2 border-gray-100 rounded-2xl hover:border-trollback-blue hover:shadow-[0_8px_30px_rgb(0,75,135,0.12)] hover:-translate-y-1 transition-all duration-300 text-left relative overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-trollback-light-blue to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                                <div className="flex bg-white p-2 rounded-2xl border border-gray-100 shadow-sm relative z-10 shrink-0 w-20 h-20 items-center justify-center overflow-hidden">
+                                    <img
+                                        src="/assets/angular-auth-logo.png"
+                                        alt="OIDC Entra"
+                                        className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            e.currentTarget.parentElement?.classList.add('bg-gray-50');
+                                        }}
+                                    />
+                                </div>
+                                <div className="ml-5 flex-1 relative z-10">
+                                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-trollback-dark transition-colors">Tjänsteperson / Kommun</h3>
+                                    <p className="text-sm text-gray-500 mt-1">Logga in internt med kommun-ID (OIDC)</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-white flex items-center justify-center relative z-10 shadow-sm transition-colors duration-300">
+                                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-trollback-blue transition-colors" />
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* [DEVELOPMENT ONLY] Dev Login Shortcut */}
+                        <div className="mt-8 pt-8 border-t border-gray-100 text-center">
+                            <p className="text-xs text-gray-400 mb-4 uppercase tracking-widest font-bold">Utveckling</p>
+                            <div className="flex flex-col gap-2">
+                                <a
+                                    href="http://localhost:4000/api/auth/dev-login?pnr=199001019802"
+                                    className="inline-flex items-center justify-center px-6 py-3 bg-gray-50 text-trollback-blue rounded-xl border border-gray-100 hover:border-trollback-blue hover:shadow-[0_8px_30px_rgb(0,75,135,0.12)] hover:-translate-y-1 transition-all duration-300 font-semibold text-sm group"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-trollback-light-blue to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                    <div className="flex bg-trollback-light-blue p-4 rounded-xl text-trollback-blue group-hover:bg-trollback-blue group-hover:text-white transition-colors duration-300 relative z-10 shrink-0">
-                                        <User className="w-6 h-6" />
-                                    </div>
-                                    <div className="ml-5 flex-1 relative z-10">
-                                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-trollback-dark transition-colors">Privatperson</h3>
-                                        <p className="text-sm text-gray-500 mt-1">Logga in med ditt personliga BankID</p>
-                                    </div>
-                                    <div className="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-white flex items-center justify-center relative z-10 shadow-sm transition-colors duration-300">
-                                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-trollback-blue transition-colors" />
-                                    </div>
-                                </button>
-
-                                <button
-                                    onClick={loginOidc}
-                                    className="w-full group flex items-center p-6 bg-white border-2 border-gray-100 rounded-2xl hover:border-trollback-blue hover:shadow-[0_8px_30px_rgb(0,75,135,0.12)] hover:-translate-y-1 transition-all duration-300 text-left relative overflow-hidden"
+                                    Snabb-inloggning (Raffi)
+                                    <ArrowRight className="w-4 h-4 ml-2 text-gray-400 group-hover:text-trollback-blue group-hover:translate-x-0.5 transition-all" />
+                                </a>
+                                <a
+                                    href="http://localhost:4000/api/auth/dev-login?pnr=198001019804"
+                                    className="inline-flex items-center justify-center px-6 py-3 bg-trollback-light-blue/10 text-trollback-blue rounded-xl border border-trollback-blue/20 hover:border-trollback-blue hover:shadow-[0_8px_30px_rgb(0,75,135,0.12)] hover:-translate-y-1 transition-all duration-300 font-bold text-sm group"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-trollback-light-blue to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                    <div className="flex bg-gray-50 p-4 rounded-xl text-gray-500 group-hover:bg-trollback-blue group-hover:text-white transition-colors duration-300 relative z-10 shrink-0">
-                                        <Building2 className="w-6 h-6" />
-                                    </div>
-                                    <div className="ml-5 flex-1 relative z-10">
-                                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-trollback-dark transition-colors">Tjänsteperson / Kommun</h3>
-                                        <p className="text-sm text-gray-500 mt-1">Logga in internt med kommun-ID (OIDC)</p>
-                                    </div>
-                                    <div className="w-10 h-10 rounded-full bg-gray-50 group-hover:bg-white flex items-center justify-center relative z-10 shadow-sm transition-colors duration-300">
-                                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-trollback-blue transition-colors" />
-                                    </div>
-                                </button>
-                            </div>
-
-                            <div className="mt-12 text-center text-sm">
-                                <a href="#" className="font-semibold text-trollback-blue hover:text-trollback-dark hover:underline transition-colors decoration-2 underline-offset-4">
-                                    Läs mer om hur vi hanterar personuppgifter
+                                    Snabb-inloggning (Gustav - Ny ID-test)
+                                    <ArrowRight className="w-4 h-4 ml-2 text-gray-400 group-hover:text-trollback-blue group-hover:translate-x-0.5 transition-all" />
                                 </a>
                             </div>
                         </div>
-                    ) : (
-                        <div className="animate-slide-in-right w-full max-w-md mx-auto">
-                            <button
-                                onClick={() => setView('selection')}
-                                className="mb-8 flex items-center text-sm font-semibold text-gray-500 hover:text-trollback-blue transition-colors group"
-                            >
-                                <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-trollback-light-blue flex items-center justify-center mr-2 transition-colors">
-                                    <ChevronLeft className="w-4 h-4" />
-                                </div>
-                                Tillbaka
-                            </button>
 
-                            <h2 className="text-3xl font-black text-gray-900 mb-2">Logga in</h2>
-                            <p className="text-gray-500 mb-8">Ange dina uppgifter för att fortsätta.</p>
-
-                            <form onSubmit={handleLocalLogin} className="space-y-5">
-                                <div className="space-y-1">
-                                    <label className="text-sm font-bold text-gray-700 ml-1">Användarnamn</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <User className="h-5 w-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={username}
-                                            onChange={(e) => setUsername(e.target.value)}
-                                            placeholder="t.ex. raffi"
-                                            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-transparent focus:bg-white rounded-xl focus:ring-0 focus:border-trollback-blue outline-none transition-all font-medium text-gray-900 placeholder:font-normal placeholder:text-gray-400"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1">
-                                    <label className="text-sm font-bold text-gray-700 ml-1">Lösenord</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <Lock className="h-5 w-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            type="password"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            placeholder="••••••••"
-                                            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-transparent focus:bg-white rounded-xl focus:ring-0 focus:border-trollback-blue outline-none transition-all font-medium text-gray-900 placeholder:font-normal placeholder:text-gray-400"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                {error && (
-                                    <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-sm font-semibold text-red-600 animate-fade-in flex items-start gap-2">
-                                        <ShieldCheck className="w-5 h-5 shrink-0" />
-                                        {error}
-                                    </div>
-                                )}
-
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full bg-trollback-blue text-white font-bold py-4 rounded-xl hover:bg-trollback-dark hover:shadow-lg hover:shadow-trollback-blue/20 focus:ring-4 focus:ring-trollback-light-blue transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-                                >
-                                    {isLoading ? (
-                                        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    ) : (
-                                        "Logga in"
-                                    )}
-                                </button>
-                            </form>
-
-                            <div className="mt-8 bg-blue-50/50 p-5 rounded-2xl border border-blue-100/50 flex gap-4 items-start">
-                                <div className="p-2 bg-white rounded-lg shadow-sm border border-blue-50 shrink-0">
-                                    <ShieldCheck className="w-5 h-5 text-trollback-blue" />
-                                </div>
-                                <div className="text-sm text-blue-900 leading-relaxed">
-                                    <strong>Testmiljö:</strong> Använd username <code className="bg-white px-1.5 py-0.5 rounded border border-blue-100 font-mono text-trollback-blue shadow-sm">raffi</code> och lösenord <code className="bg-white px-1.5 py-0.5 rounded border border-blue-100 font-mono text-trollback-blue shadow-sm">password123</code>.
-                                </div>
-                            </div>
+                        <div className="mt-8 text-center text-sm">
+                            <a href="#" className="font-semibold text-trollback-blue hover:text-trollback-dark hover:underline transition-colors decoration-2 underline-offset-4">
+                                Läs mer om hur vi hanterar personuppgifter
+                            </a>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
 

@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+dist/
+.ts-node/
+.env
+.env.*
+!.env.example
+*.log
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.keystore
